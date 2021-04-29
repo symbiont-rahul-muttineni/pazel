@@ -67,7 +67,7 @@ def find_existing_test_size(script_path, bazel_rule_type):
 
     script_dir = os.path.dirname(script_path)
     script_filename = os.path.basename(script_path)
-    build_file_path = os.path.join(script_dir, 'BUILD')
+    build_file_path = os.path.join(script_dir, 'BUILD.bazel')
 
     rule = find_existing_rule(build_file_path, script_filename, bazel_rule_type)
 
@@ -99,7 +99,7 @@ def find_existing_data_deps(script_path, bazel_rule_type):
     """
     script_dir = os.path.dirname(script_path)
     script_filename = os.path.basename(script_path)
-    build_file_path = os.path.join(script_dir, 'BUILD')
+    build_file_path = os.path.join(script_dir, 'BUILD.bazel')
 
     rule = find_existing_rule(build_file_path, script_filename, bazel_rule_type)
 

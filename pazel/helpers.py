@@ -42,7 +42,7 @@ def get_build_file_path(path):
     else:
         directory = os.path.dirpath(path)
 
-    build_file_path = os.path.join(directory, 'BUILD')
+    build_file_path = os.path.join(directory, 'BUILD.bazel')
 
     return build_file_path
 
