@@ -32,6 +32,7 @@ def get_imports(script_source):
             module = node.module
 
             for name in node.names:
+                module = module if module else "__init__"
                 from_imports.append((module, name.name))
         # Parse expressions of the form "import X".
         elif isinstance(node, ast.Import):
