@@ -32,7 +32,7 @@ def app(input_path, project_root, contains_pre_installed_packages, pazelrc_path)
     """
     # Parse user-defined extensions to pazel.
     output_extension, custom_bazel_rules, custom_import_inference_rules, import_name_to_pip_name, \
-        local_import_name_to_dep, requirement_load = parse_pazel_extensions(pazelrc_path)
+        local_import_name_to_dep, requirement_load, target_prefix = parse_pazel_extensions(pazelrc_path)
 
     # Handle directories.
     if os.path.isdir(input_path):
@@ -55,7 +55,8 @@ def app(input_path, project_root, contains_pre_installed_packages, pazelrc_path)
                                                               custom_bazel_rules,
                                                               custom_import_inference_rules,
                                                               import_name_to_pip_name,
-                                                              local_import_name_to_dep)
+                                                              local_import_name_to_dep,
+                                                              target_prefix)
 
                     # Add the new rule and a newline between it and any previous rules.
                     if new_rule:

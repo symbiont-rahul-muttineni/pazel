@@ -75,7 +75,7 @@ def sort_module_names(module_names):
 
 
 def generate_rule(script_path, template, package_names, module_names, data_deps, test_size,
-                  import_name_to_pip_name, local_import_name_to_dep):
+                  import_name_to_pip_name, local_import_name_to_dep, target_prefix):
     """Generate a Bazel Python rule given the type of the Python file and imports in it.
 
     Args:
@@ -88,6 +88,7 @@ def generate_rule(script_path, template, package_names, module_names, data_deps,
         import_name_to_pip_name (dict): Mapping from Python package import name to its pip name.
         local_import_name_to_dep (dict): Mapping from local package import name to its Bazel
             dependency.
+        target_prefix (str): Prefix to add to all local targets.
 
     Returns:
         rule (str): Bazel rule generated for the current Python script.
@@ -116,7 +117,8 @@ def generate_rule(script_path, template, package_names, module_names, data_deps,
             module_name = ':' + module_name
         else:
             # Format the dotted module name to the Bazel format with slashes.
-            module_name = '//' + module_name.replace('.', '/')
+            prefix = target_prefix + '/' if target_prefix else ''
+            module_name = '//' + prefix + module_name.replace('.', '/')
 
             # Replace the last slash with :.
             last_slash_idx = module_name.rfind('/')
@@ -171,7 +173,8 @@ def generate_rule(script_path, template, package_names, module_names, data_deps,
 
 def parse_script_and_generate_rule(script_path, project_root, contains_pre_installed_packages,
                                    custom_bazel_rules, custom_import_inference_rules,
-                                   import_name_to_pip_name, local_import_name_to_dep):
+                                   import_name_to_pip_name, local_import_name_to_dep,
+                                   target_prefix):
     """Generate Bazel Python rule for a Python script.
 
     Args:
@@ -185,6 +188,7 @@ def parse_script_and_generate_rule(script_path, project_root, contains_pre_insta
         import_name_to_pip_name (dict): Mapping from Python package import name to its pip name.
         local_import_name_to_dep (dict): Mapping from local package import name to its Bazel
             dependency.
+        target_prefix (str): Prefix to add to all local targets.
 
     Returns:
         rule (str): Bazel rule generated for the Python script.
@@ -211,6 +215,7 @@ def parse_script_and_generate_rule(script_path, project_root, contains_pre_insta
 
     # Generate the Bazel Python rule based on the gathered information.
     rule = generate_rule(script_path, bazel_rule_type.template, package_names, module_names,
-                         data_deps, test_size, import_name_to_pip_name, local_import_name_to_dep)
+                         data_deps, test_size, import_name_to_pip_name, local_import_name_to_dep, 
+                         target_prefix)
 
     return rule
