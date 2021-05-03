@@ -42,7 +42,7 @@ def get_imports(script_source):
     return packages, from_imports
 
 
-def infer_import_type(all_imports, project_root, contains_pre_installed_packages, custom_rules):
+def infer_import_type(all_imports, project_root, script_dir, contains_pre_installed_packages, custom_rules):
     """Infer what is being imported.
 
     Given a list of tuples (package/module, some object) infer whether the first element is a
@@ -51,6 +51,7 @@ def infer_import_type(all_imports, project_root, contains_pre_installed_packages
     Args:
         all_imports (list of tuple): All imports in a Python script.
         project_root (str): Local imports are assumed to be relative to this path.
+        script_dir (str): Path to directory containing script.
         contains_pre_installed_packages (bool): Whether the environment contains external packages.
 
     Returns:
@@ -104,9 +105,8 @@ def infer_import_type(all_imports, project_root, contains_pre_installed_packages
         unknown_is_module = os.path.isfile(module_path)
 
         if unknown_is_package:
-            # Assume that for package //foo, there exists rule //foo:foo.
-            # TODO: Relax this assumption.
-            dotted_path += '.%s' % unknown
+            # Assume that for package //foo, there exists rule //foo:__init__.
+            dotted_path += '.__init__'
             modules.append(dotted_path)
             continue
 
@@ -119,6 +119,14 @@ def infer_import_type(all_imports, project_root, contains_pre_installed_packages
         package_path = os.path.join(project_root, base.replace('.', '/'))
         if os.path.isdir(package_path) and _in_public_interface(package_path, unknown):
             modules.append(base + '.__init__')
+            continue
+
+        # Check if the module is local to the script directory.
+        base_path = base.replace('.', '/')
+        local_module_path = os.path.join(script_dir, base_path + '.py')
+        if os.path.exists(local_module_path):
+            relative_module = os.path.relpath(local_module_path, project_root).replace('/', '.')[:-3]
+            modules.append(relative_module)
             continue
 
         # Finally, assume that base is either a pip installable or a local package.
@@ -147,6 +155,12 @@ def _in_public_interface(package_path, unknown):
     except IOError:
         return public
 
+    # If not importing anything from the public interface,
+    # and unknown is None, it is trivially a part of the 
+    # public interface.
+    if unknown is None: 
+        return True
+
     try:
         top_node = ast.parse(init_source)
     except SyntaxError:
@@ -164,4 +178,7 @@ def _in_public_interface(package_path, unknown):
                         if element.s == unknown:
                             return True
 
-    return False
+    # Allow for imports not declared in __all__   
+    # TODO: Make this respect the AST properly.
+    # For now, we'll do a simple string search.
+    return init_source.find(unknown)
