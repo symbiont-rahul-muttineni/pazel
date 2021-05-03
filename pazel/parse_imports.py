@@ -181,4 +181,4 @@ def _in_public_interface(package_path, unknown):
     # Allow for imports not declared in __all__   
     # TODO: Make this respect the AST properly.
     # For now, we'll do a simple string search.
-    return init_source.find(unknown)
+    return init_source.find(unknown) != -1

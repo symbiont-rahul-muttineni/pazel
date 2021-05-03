@@ -12,6 +12,7 @@ import re
 PY_BINARY_TEMPLATE = """py_binary(
     name = "{name}",
     srcs = ["{name}.py"],
+    imports = ["{pypath}"],
     {data}
     {deps}
 )"""
@@ -40,6 +41,7 @@ class BazelRule(object):
 
     # Required class variables.
     is_test_rule = None
+    is_binary_rule = None
     template = None
     rule_identifier = None
 
@@ -84,6 +86,7 @@ class PyBinaryRule(BazelRule):
 
     # Required class variables.
     is_test_rule = False    # Is this a test rule?
+    is_binary_rule = True
     template = PY_BINARY_TEMPLATE   # Filled version of this will be written to the BUILD file.
     rule_identifier = 'py_binary'   # The name of the rule.
 
@@ -115,6 +118,7 @@ class PyLibraryRule(BazelRule):
 
     # Required class variables.
     is_test_rule = False    # Is this a test rule?
+    is_binary_rule = False
     template = PY_LIBRARY_TEMPLATE  # Filled version of this will be written to the BUILD file.
     rule_identifier = 'py_library'  # The name of the rule.
 
@@ -142,6 +146,7 @@ class PyTestRule(BazelRule):
 
     # Required class variables.
     is_test_rule = True     # Is this a test rule?
+    is_binary_rule = True
     template = PY_TEST_TEMPLATE     # Filled version of this will be written to the BUILD file.
     rule_identifier = 'py_test'     # The name of the rule.
 

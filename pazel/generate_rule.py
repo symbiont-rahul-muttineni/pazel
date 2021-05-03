@@ -74,13 +74,14 @@ def sort_module_names(module_names):
     return sorted_module_names
 
 
-def generate_rule(script_path, template, package_names, module_names, data_deps, test_size,
+def generate_rule(script_path, project_root, bazel_rule_type, package_names, module_names, data_deps, test_size,
                   import_name_to_pip_name, local_import_name_to_dep, target_prefix):
     """Generate a Bazel Python rule given the type of the Python file and imports in it.
 
     Args:
         script_path (str): Path to a Python script.
-        template (str): Template for writing a Bazel rule. To be filled with name, srcs, deps, etc.
+        project_root (str): Path to a project root.
+        bazel_rule_type (BazelRule): Bazel rule class that will be used to generate the rule.
         package_names (set of str): Set of imported packages names in dotted notation (pkg1.pkg2).
         module_names (set of str): Set of imported module names in dotted notation (pkg.module)
         data_deps (str): Data dependencies parsed from an existing BUILD file.
@@ -163,8 +164,9 @@ def generate_rule(script_path, template, package_names, module_names, data_deps,
 
     data = data_deps + ',' if data_deps is not None else ''
     size = test_size if test_size is not None else 'small'  # If size not given, assume small.
+    pypath = os.path.relpath(project_root, os.path.dirname(script_path)) if bazel_rule_type.is_binary_rule else "."
 
-    rule = template.format(name=script_name, deps=deps, data=data, size=size)
+    rule = bazel_rule_type.template.format(name=script_name, deps=deps, data=data, size=size, pypath=pypath)
     # If e.g. 'data' is missing, then remove blank lines.
     rule = "\n".join([s for s in rule.splitlines() if s.strip()])
 
@@ -214,7 +216,7 @@ def parse_script_and_generate_rule(script_path, project_root, contains_pre_insta
     test_size = find_existing_test_size(script_path, bazel_rule_type)
 
     # Generate the Bazel Python rule based on the gathered information.
-    rule = generate_rule(script_path, bazel_rule_type.template, package_names, module_names,
+    rule = generate_rule(script_path, project_root, bazel_rule_type, package_names, module_names,
                          data_deps, test_size, import_name_to_pip_name, local_import_name_to_dep, 
                          target_prefix)
 
