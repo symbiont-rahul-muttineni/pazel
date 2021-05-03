@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import fnmatch
 
 from pazel.generate_rule import parse_script_and_generate_rule
 from pazel.helpers import get_build_file_path
@@ -32,12 +33,15 @@ def app(input_path, project_root, contains_pre_installed_packages, pazelrc_path)
     """
     # Parse user-defined extensions to pazel.
     output_extension, custom_bazel_rules, custom_import_inference_rules, import_name_to_pip_name, \
-        local_import_name_to_dep, requirement_load, target_prefix = parse_pazel_extensions(pazelrc_path)
+        local_import_name_to_dep, requirement_load, target_prefix, ignore_patterns = parse_pazel_extensions(pazelrc_path)
 
     # Handle directories.
     if os.path.isdir(input_path):
         # Traverse the directory recursively.
         for dirpath, _, filenames in os.walk(input_path):
+            if any([fnmatch.fnmatch(dirpath, pattern) for pattern in ignore_patterns]):
+                continue
+
             build_source = ''
 
             # Parse ignored rules in an existing BUILD file, if any.

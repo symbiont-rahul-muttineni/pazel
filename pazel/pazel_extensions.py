@@ -91,10 +91,15 @@ def parse_pazel_extensions(pazelrc_path):
     target_prefix = getattr(pazelrc, 'TARGET_PREFIX', "")
     assert isinstance(target_prefix, str), "TARGET_PREFIX must be a string."
 
+    # Read target prefix that should be added to all local targets.
+    ignore_patterns = getattr(pazelrc, 'IGNORE_PATTERNS', "")
+    assert isinstance(ignore_patterns, list), "IGNORE_PATTERNS must be a list."
+
     default_requirement_load = 'load("@my_deps//:requirements.bzl", "requirement")'
     requirement_load = getattr(pazelrc, 'REQUIREMENT', default_requirement_load)
 
     assert isinstance(requirement_load, str), "REQUIREMENT must be a string."
 
     return output_extension, custom_bazel_rules, custom_import_inference_rules, \
-        import_name_to_pip_name, local_import_name_to_dep, requirement_load, target_prefix
+        import_name_to_pip_name, local_import_name_to_dep, requirement_load, \
+        target_prefix, ignore_patterns
