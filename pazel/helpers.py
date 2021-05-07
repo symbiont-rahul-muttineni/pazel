@@ -76,14 +76,15 @@ def is_ignored(script_path, ignored_rules):
 
         for keyword in func_call.keywords:
             if keyword.arg == 'srcs':
-                elements = keyword.value.elts
+                if hasattr(keyword.value, "elts"):
+                    elements = keyword.value.elts
 
-                assert len(elements) == 1, \
-                    "Multiple source files not supported in %s." % ignored_rule
+                    assert len(elements) == 1, \
+                        "Multiple source files not supported in %s." % ignored_rule
 
-                if elements[0].s == script_file_name:
-                    ignored = True
-                    break
+                    if elements[0].s == script_file_name:
+                        ignored = True
+                        break
 
         # The script file name may also given as a positional argument.
         for positional in func_call.args:
